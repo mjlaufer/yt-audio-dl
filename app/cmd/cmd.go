@@ -5,9 +5,16 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/mjlaufer/yt-to-mp3/internal/app/yt"
+	"github.com/mjlaufer/yt-audio-dl/app/yt"
 	"github.com/spf13/cobra"
 )
+
+// Verbose flag - allows the CLI to provide more information to the user.
+var verbose bool
+
+func init() {
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
+}
 
 var rootCmd = &cobra.Command{
 	Use: "yt",
@@ -18,10 +25,14 @@ var rootCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("yt-to-mp3 CLI")
+		fmt.Println("yt-audio-dl CLI")
+
+		options := yt.Options{
+			Verbose: verbose,
+		}
 
 		url := args[0]
-		if err := yt.Download(url); err != nil {
+		if err := yt.Download(url, &options); err != nil {
 			fmt.Println("err:", err)
 			return
 		}

@@ -1,4 +1,4 @@
-module github.com/mjlaufer/yt-to-mp3
+module github.com/mjlaufer/yt-audio-dl
 
 require (
 	github.com/spf13/cobra v0.0.3

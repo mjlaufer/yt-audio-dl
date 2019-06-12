@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mjlaufer/yt-to-mp3/internal/app/cmd"
+	"github.com/mjlaufer/yt-audio-dl/app/cmd"
 )
 
 func main() {
