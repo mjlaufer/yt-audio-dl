@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -29,7 +30,9 @@ func PrintDownloadStats(start time.Time, size int64) {
 }
 
 // PrintProgress prints the current download progress.
-func PrintProgress(out *os.File, offset, size int64) {
+func PrintProgress(out *os.File, offset, size int64, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 

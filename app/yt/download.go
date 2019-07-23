@@ -6,9 +6,11 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -36,8 +38,7 @@ func Download(url string, options *Options) error {
 
 	usr, _ := user.Current()
 	outputDir := filepath.Join(usr.HomeDir, "Downloads")
-	outputFile := vid.ID + ".mp4"
-	destination := filepath.Join(outputDir, outputFile)
+	destination := filepath.Join(outputDir, vid.ID)
 
 	// Loop through video streams in descending order of quality.
 	for _, stream := range vid.Streams {
@@ -58,6 +59,7 @@ func (vid *Video) makeRequest(destination string, url string) error {
 		out  *os.File
 		err  error
 		size int64
+		wg   sync.WaitGroup
 	)
 
 	// Create output file
@@ -71,7 +73,8 @@ func (vid *Video) makeRequest(destination string, url string) error {
 	}
 
 	if size > 0 {
-		go PrintProgress(out, 0, size)
+		wg.Add(1)
+		go PrintProgress(out, 0, size, &wg)
 	}
 
 	// Get download start time
@@ -90,12 +93,14 @@ func (vid *Video) makeRequest(destination string, url string) error {
 		return errors.New("fetch video failed")
 	}
 
-	// Copy data to destination file
+	// Copy data to output file
 	if size, err = io.Copy(out, resp.Body); err != nil {
 		return err
 	}
 
+	wg.Wait()
 	PrintDownloadStats(start, size)
+	runFFmpeg(destination)
 
 	return err
 }
@@ -122,4 +127,25 @@ func fetchVideoContentLength(url string) (size int64, err error) {
 		err = fmt.Errorf("Invalid Content-Length: %s", err)
 	}
 	return
+}
+
+func runFFmpeg(destination string) {
+	ffmpeg, err := exec.LookPath("ffmpeg")
+	if err != nil {
+		fmt.Println("\nPlease download FFmpeg, and add to your $PATH.")
+	} else {
+		fmt.Println("\nExtracting audio...")
+		audioFile := destination + ".mp3"
+
+		cmd := exec.Command(ffmpeg, "-y", "-loglevel", "quiet", "-i", destination, "-vn", audioFile)
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		if err := cmd.Run(); err != nil {
+			fmt.Println("\nFailed to extract to audio:", err)
+		} else {
+			fmt.Println("\nExtracted audio to", audioFile)
+		}
+	}
 }
