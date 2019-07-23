@@ -15,42 +15,42 @@ func VerbosePrint(message string) {
 }
 
 // PrintDownloadStats prints the download duration and speed.
-func PrintDownloadStats(start time.Time, length int64) {
+func PrintDownloadStats(start time.Time, size int64) {
 	duration := time.Now().Sub(start)
-	speed := float64(length) / float64(duration/time.Second)
+	speed := float64(size) / float64(duration/time.Second)
 	if duration > time.Second {
 		duration -= duration % time.Second
 	} else {
-		speed = float64(length)
+		speed = float64(size)
 	}
 
-	fmt.Printf("Download duration: %s\n", duration)
+	fmt.Printf("\n\nDownload duration: %s\n", duration)
 	fmt.Printf("Average speed: %s/s\n", abbr(int64(speed)))
 }
 
-// PrintProgress prints the download progress bar.
-func PrintProgress(out *os.File, offset, length int64) {
+// PrintProgress prints the current download progress.
+func PrintProgress(out *os.File, offset, size int64) {
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
-	start := time.Now()
-	tail := offset
 
+	tail := offset
 	var err error
-	for now := range ticker.C {
-		duration := now.Sub(start)
-		duration -= duration % time.Second
+
+	for range ticker.C {
 		offset, err = out.Seek(0, os.SEEK_CUR)
 		if err != nil {
 			return
 		}
+
+		percent := 100 * offset / size
 		speed := offset - tail
-		percent := int(100 * offset / length)
 		progress := fmt.Sprintf(
-			"%s\t %s/%s\t %d%%\t %s/s",
-			duration, abbr(offset), abbr(length), percent, abbr(speed))
-		fmt.Println(progress)
+			"%s/%s (%d%%) | %s/s",
+			abbr(offset), abbr(size), percent, abbr(speed))
+		fmt.Printf("\rProgress: %s", progress)
+
 		tail = offset
-		if tail >= length {
+		if tail >= size {
 			break
 		}
 	}

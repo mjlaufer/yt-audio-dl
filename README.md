@@ -5,7 +5,10 @@ converting them to mp3 files.
 
 ## Installation
 
-Prerequisite: Go version 1.11 or later
+Prerequisites:
+
+-   Go version 1.11 or later
+-   FFmpeg https://ffmpeg.org/
 
 To install with `go get`:
 

@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strconv"
 	"time"
 )
 
@@ -54,10 +55,24 @@ func Download(url string, options *Options) error {
 
 func (vid *Video) makeRequest(destination string, url string) error {
 	var (
-		out    *os.File
-		err    error
-		length int64
+		out  *os.File
+		err  error
+		size int64
 	)
+
+	// Create output file
+	out, err = os.Create(destination)
+	if err != nil {
+		return err
+	}
+
+	if size, err = fetchVideoContentLength(url); err != nil {
+		VerbosePrint(fmt.Sprintf("http.Head\nerror: %s\nURL: %s\n", err, url))
+	}
+
+	if size > 0 {
+		go PrintProgress(out, 0, size)
+	}
 
 	// Get download start time
 	start := time.Now()
@@ -76,16 +91,35 @@ func (vid *Video) makeRequest(destination string, url string) error {
 	}
 
 	// Copy data to destination file
-	out, err = os.Create(destination)
-	if err != nil {
+	if size, err = io.Copy(out, resp.Body); err != nil {
 		return err
 	}
 
-	if length, err = io.Copy(out, resp.Body); err != nil {
-		return err
-	}
-
-	PrintDownloadStats(start, length)
+	PrintDownloadStats(start, size)
 
 	return err
+}
+
+func fetchVideoContentLength(url string) (size int64, err error) {
+	res, err := http.Head(url)
+	if err != nil {
+		err = fmt.Errorf("Head request failed: %s", err)
+		return
+	}
+	if res.StatusCode == 403 {
+		err = errors.New("Head request failed with status code 403")
+		return
+	}
+
+	contentLength := res.Header.Get("Content-Length")
+	if len(contentLength) == 0 {
+		err = errors.New("Content-Length header is missing")
+		return
+	}
+
+	size, err = strconv.ParseInt(contentLength, 10, 64)
+	if err != nil {
+		err = fmt.Errorf("Invalid Content-Length: %s", err)
+	}
+	return
 }
