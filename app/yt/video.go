@@ -59,7 +59,7 @@ func getVideoID(url string) (id string, err error) {
 }
 
 func fetchVideoInfo(id string) (string, error) {
-	url := "http://youtube.com/get_video_info?video_id=" + id
+	url := "https://youtube.com/get_video_info?video_id=" + id
 
 	VerbosePrint(fmt.Sprintf("video info URL: %s\n", url))
 

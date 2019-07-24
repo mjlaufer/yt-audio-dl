@@ -26,7 +26,7 @@ func PrintDownloadStats(start time.Time, size int64) {
 	}
 
 	fmt.Printf("\n\nDownload duration: %s\n", duration)
-	fmt.Printf("Average speed: %s/s\n", abbr(int64(speed)))
+	fmt.Printf("Average speed: %s/s\n\n", abbr(int64(speed)))
 }
 
 // PrintProgress prints the current download progress.

@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/briandowns/spinner"
 )
 
 // Verbose stores the "verbose" CLI flag value.
@@ -134,7 +136,6 @@ func runFFmpeg(destination string) {
 	if err != nil {
 		fmt.Println("\nPlease download FFmpeg, and add to your $PATH.")
 	} else {
-		fmt.Println("\nExtracting audio...")
 		audioFile := destination + ".mp3"
 
 		cmd := exec.Command(ffmpeg, "-y", "-loglevel", "quiet", "-i", destination, "-vn", audioFile)
@@ -142,10 +143,17 @@ func runFFmpeg(destination string) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
-		if err := cmd.Run(); err != nil {
-			fmt.Println("\nFailed to extract to audio:", err)
+		s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+		s.Suffix = " Extracting audio..."
+		s.Start()
+
+		err := cmd.Run()
+		s.Stop()
+
+		if err != nil {
+			fmt.Println("Failed to extract to audio:", err)
 		} else {
-			fmt.Println("\nExtracted audio to", audioFile)
+			fmt.Println("Extracted audio to", audioFile)
 		}
 	}
 }
