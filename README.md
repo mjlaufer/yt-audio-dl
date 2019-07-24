@@ -3,9 +3,9 @@
 `yt-audio-dl` is an application and command-line interface for downloading YouTube videos and
 converting them to mp3 files.
 
-## Installation
+## Installation and Usage
 
-Prerequisites:
+### Prerequisites:
 
 -   Go version 1.11 or later
 -   FFmpeg https://ffmpeg.org/
@@ -14,22 +14,18 @@ To install with `go get`:
 
 ```
 go get -u github.com/mjlaufer/yt-audio-dl
+yt-audio-dl [options] [youtube url]
 ```
 
-To clone this repository and install:
+To clone this repository and build:
 
 ```
 git clone https://github.com/mjlaufer/yt-audio-dl
 cd yt-audio-dl
-make
+go build -o yt yt-audio-dl.go
+./yt [options] [youtube url]
 ```
 
-## Usage
-
-```
-yt-audio-dl [options] [youtube url]
-```
-
-### CLI Options
+### CLI Options:
 
 -   `--verbose, -v`
