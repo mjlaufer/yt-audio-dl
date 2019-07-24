@@ -30,7 +30,7 @@ func Download(url string, options *Options) error {
 		Verbose = true
 	}
 
-	fmt.Printf("Downloading from %s\n", url)
+	fmt.Printf("Downloading from %s\n\n", url)
 
 	// Instantiate a Video struct.
 	vid, err := NewVideo(url)

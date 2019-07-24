@@ -17,7 +17,7 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use: "yt",
+	Use: "yt-audio-dl",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return errors.New("requires a video url argument")
